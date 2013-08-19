@@ -38,9 +38,18 @@ cd node
 # the top of app/meteor/meteor.js and app/server/server.js.
 git checkout v0.8.18
 
-./configure --prefix="$DIR" --without-snapshot
+./configure --prefix="$DIR"
+echo
+echo "FINISHED CONFIGURING"
+echo
 make -j2
+echo
+echo "FINISHED MAKE"
+echo
 make install PORTABLE=1
+echo
+echo "FINISHED MAKE INSTALL"
+echo
 # PORTABLE=1 is a node hack to make npm look relative to itself instead
 # of hard coding the PREFIX.
 
