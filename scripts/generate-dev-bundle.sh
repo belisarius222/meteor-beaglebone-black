@@ -21,8 +21,10 @@ if [ -z "$BUNDLE_VERSION" ]; then
 fi
 echo "Building dev bundle $BUNDLE_VERSION"
 
-DIR=`mktemp -d -t generate-dev-bundle-XXXXXXXX`
-trap 'rm -rf "$DIR" >/dev/null 2>&1' 0
+# DIR=`mktemp -d -t generate-dev-bundle-XXXXXXXX`
+# trap 'rm -rf "$DIR" >/dev/null 2>&1' 0
+DIR=/media/drives/sd8/dev_bundle_build
+trap 'echo "BUILD ENDED"' 0
 
 echo BUILDING IN "$DIR"
 
@@ -32,11 +34,13 @@ umask 022
 mkdir build
 cd build
 
-git clone git://github.com/joyent/node.git
-cd node
+# git clone git://github.com/joyent/node.git
+# cd node
 # When upgrading node versions, also update the values of MIN_NODE_VERSION at
 # the top of app/meteor/meteor.js and app/server/server.js.
-git checkout v0.8.18
+# git checkout v0.8.18
+
+cd /media/drives/sd8/node-v0.8.18
 
 ./configure --prefix="$DIR" --without-snapshot
 echo
