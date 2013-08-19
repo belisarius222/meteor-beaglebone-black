@@ -38,11 +38,11 @@ cd node
 # the top of app/meteor/meteor.js and app/server/server.js.
 git checkout v0.8.18
 
-./configure --prefix="$DIR"
+./configure --prefix="$DIR" --without-snapshot
 echo
 echo "FINISHED CONFIGURING"
 echo
-make -j2
+make
 echo
 echo "FINISHED MAKE"
 echo
