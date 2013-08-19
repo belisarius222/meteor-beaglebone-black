@@ -6,50 +6,12 @@ set -u
 UNAME=$(uname)
 ARCH=$(uname -m)
 
-if [ "$UNAME" == "Linux" ] ; then
-    if [ "$ARCH" != "i686" -a "$ARCH" != "x86_64" ] ; then
-        echo "Unsupported architecture: $ARCH"
-        echo "Meteor only supports i686 and x86_64 for now."
-        exit 1
-    fi
-    MONGO_OS="linux"
-
-    stripBinary() {
-        strip --remove-section=.comment --remove-section=.note $1
-    }
-elif [ "$UNAME" == "Darwin" ] ; then
-    SYSCTL_64BIT=$(sysctl -n hw.cpu64bit_capable 2>/dev/null || echo 0)
-    if [ "$ARCH" == "i386" -a "1" != "$SYSCTL_64BIT" ] ; then
-        # some older macos returns i386 but can run 64 bit binaries.
-        # Probably should distribute binaries built on these machines,
-        # but it should be OK for users to run.
-        ARCH="x86_64"
-    fi
-
-    if [ "$ARCH" != "x86_64" ] ; then
-        echo "Unsupported architecture: $ARCH"
-        echo "Meteor only supports x86_64 for now."
-        exit 1
-    fi
-
-    MONGO_OS="osx"
-
-    # We don't strip on Mac because we don't know a safe command. (Can't strip
-    # too much because we do need node to be able to load objects like
-    # fibers.node.)
-    stripBinary() {
-        true
-    }
-else
-    echo "This OS not yet supported"
-    exit 1
-fi
-
 PLATFORM="${UNAME}_${ARCH}"
 
 # save off meteor checkout dir as final target
 cd `dirname $0`/..
 TARGET_DIR=`pwd`
+echo "TARGET_DIR: $TARGET_DIR"
 
 # Read the bundle version from the meteor shell script.
 BUNDLE_VERSION=$(perl -ne 'print $1 if /BUNDLE_VERSION=(\S+)/' meteor)
@@ -76,8 +38,8 @@ cd node
 # the top of app/meteor/meteor.js and app/server/server.js.
 git checkout v0.8.18
 
-./configure --prefix="$DIR"
-make -j4
+./configure --prefix="$DIR" --without-snapshot
+make -j2
 make install PORTABLE=1
 # PORTABLE=1 is a node hack to make npm look relative to itself instead
 # of hard coding the PREFIX.
@@ -141,22 +103,22 @@ cd ../..
 # click 'changelog' under the current version, then 'release notes' in
 # the upper right.
 cd "$DIR"
-MONGO_VERSION="2.4.3"
-MONGO_NAME="mongodb-${MONGO_OS}-${ARCH}-${MONGO_VERSION}"
-MONGO_URL="http://fastdl.mongodb.org/${MONGO_OS}/${MONGO_NAME}.tgz"
-curl "$MONGO_URL" | tar -xz
-mv "$MONGO_NAME" mongodb
+# MONGO_VERSION="2.4.3"
+# MONGO_NAME="mongodb-${MONGO_OS}-${ARCH}-${MONGO_VERSION}"
+# MONGO_URL="http://fastdl.mongodb.org/${MONGO_OS}/${MONGO_NAME}.tgz"
+# curl "$MONGO_URL" | tar -xz
+# mv "$MONGO_NAME" mongodb
 
-# don't ship a number of mongo binaries. they are big and unused. these
-# could be deleted from git dev_bundle but not sure which we'll end up
-# needing.
-cd mongodb/bin
-rm bsondump mongodump mongoexport mongofiles mongoimport mongorestore mongos mongosniff mongostat mongotop mongooplog mongoperf
-cd ../..
+# # don't ship a number of mongo binaries. they are big and unused. these
+# # could be deleted from git dev_bundle but not sure which we'll end up
+# # needing.
+# cd mongodb/bin
+# rm bsondump mongodump mongoexport mongofiles mongoimport mongorestore mongos mongosniff mongostat mongotop mongooplog mongoperf
+# cd ../..
 
-stripBinary bin/node
-stripBinary mongodb/bin/mongo
-stripBinary mongodb/bin/mongod
+# stripBinary bin/node
+# stripBinary mongodb/bin/mongo
+# stripBinary mongodb/bin/mongod
 
 echo BUNDLING
 
